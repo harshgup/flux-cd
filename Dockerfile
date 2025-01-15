@@ -1,30 +1,20 @@
-#
-# Nginx Dockerfile
-#
-# https://github.com/dockerfile/nginx
-#
+# Use a lightweight Node.js image as the base image
+FROM node:16-alpine
 
-# Pull base image.
-FROM ubuntu:latest
+# Set the working directory inside the container
+WORKDIR /usr/src/app
 
-# Install Nginx.
-RUN \
-  add-apt-repository -y ppa:nginx/stable && \
-  apt-get update && \
-  apt-get install -y nginx && \
-  rm -rf /var/lib/apt/lists/* && \
-  echo "\ndaemon off;" >> /etc/nginx/nginx.conf && \
-  chown -R www-data:www-data /var/lib/nginx
+# Copy package.json and package-lock.json for dependency installation
+COPY package*.json ./
 
-# Define mountable directories.
-VOLUME ["/etc/nginx/sites-enabled", "/etc/nginx/certs", "/etc/nginx/conf.d", "/var/log/nginx", "/var/www/html"]
+# Install the dependencies
+RUN npm install
 
-# Define working directory.
-WORKDIR /etc/nginx
+# Copy the rest of the application code
+COPY . .
 
-# Define default command.
-CMD ["nginx"]
+# Expose the port the app will run on
+EXPOSE 8080
 
-# Expose ports.
-EXPOSE 80
-EXPOSE 443
+# Set the command to run the application
+CMD ["node", "app.js"]
